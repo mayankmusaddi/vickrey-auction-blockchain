@@ -5,7 +5,9 @@ contract BarbossaBrethren {
 
     uint public endOfBidding;
     uint public endOfRevealing;
-    uint public sendBid;
+
+    address public highBidder;
+    uint public highBid;
 
     constructor(
         uint biddingPeriod,
@@ -21,7 +23,7 @@ contract BarbossaBrethren {
     mapping(address => bytes32) public hashedBidOf;
 
     function bid(uint amount, uint nonce) public{
-        require(now < endOfBidding);
+        require(now < endOfBidding,"Bidding Time has Ended");
         bytes32 h = keccak256(abi.encodePacked(amount,nonce));
         hashedBidOf[msg.sender] = h;
     }
@@ -35,12 +37,11 @@ contract BarbossaBrethren {
             return "Claim";
     }
 
-    address public highBidder = msg.sender;
-    uint public highBid;
-
     function reveal(uint amount, uint nonce) public {
-        require(now >= endOfBidding && now < endOfRevealing);
-        require(keccak256(abi.encodePacked(amount, nonce)) == hashedBidOf[msg.sender]);
+        require(now >= endOfBidding,"Revealing time has not begun");
+        require(now < endOfRevealing,"Revealing time has Ended");
+
+        require(keccak256(abi.encodePacked(amount, nonce)) == hashedBidOf[msg.sender], "Revealed Bid or Nonce don't match");
 
         if (amount > highBid) {
             highBid = amount;
@@ -48,8 +49,8 @@ contract BarbossaBrethren {
         }
     }
 
-    function claim() public {
-        require(now >= endOfRevealing);
-        sendBid = highBid;
+    function toSend() public returns (address,uint){
+        require(now >= endOfRevealing, "Reveal period has not ended");
+        return (seller,highBid);
     }
 }

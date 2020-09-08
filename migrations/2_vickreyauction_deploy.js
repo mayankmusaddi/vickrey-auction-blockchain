@@ -1,5 +1,5 @@
 const VickreyAuction = artifacts.require("VickreyAuction");
 
 module.exports = function (deployer) {
-  deployer.deploy(VickreyAuction);
+  deployer.deploy(VickreyAuction, 200, 200);
 };
