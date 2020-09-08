@@ -3,24 +3,24 @@ pragma solidity ^0.5.16;
 contract VickreyAuction{
   address seller;
   bool is_Open;
-  uint Buyers_count;
+  uint public Buyers_count;
   mapping (uint => address) buyers;
   uint[] offers;
-  uint starting_price;
+  uint public starting_price;
 
   modifier isopen() {
     require(is_Open == true);
     _;
   }
 
-  function VickreyAuction(uint _starting) public {
+  function VickreyAuc(uint _starting) public {
     seller = msg.sender;
-    isOpen = true;
+    is_Open = true;
     Buyers_count = 0;
     starting_price = _starting;
   }
 
-  function getBuyerscount() view returns (uint) {
+  function getBuyerscount() public view returns (uint) {
     return Buyers_count;
   }
 
@@ -32,7 +32,7 @@ contract VickreyAuction{
   }
 
 
-  function getWinner() returns (address, uint) {
+  function getWinner() public returns (address, uint) {
 
   }
 
