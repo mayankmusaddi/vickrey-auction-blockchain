@@ -26,6 +26,15 @@ contract BarbossaBrethren {
         hashedBidOf[msg.sender] = h;
     }
 
+    function time() view public returns(string memory) {
+        if(now < endOfBidding)
+            return "Bidding";
+        else if(now >= endOfBidding && now < endOfRevealing)
+            return "Revealing";
+        else
+            return "Claim";
+    }
+
     address public highBidder = msg.sender;
     uint public highBid;
 
