@@ -3,7 +3,6 @@ pragma solidity ^0.5.16;
 contract BarbossaBrethren {
     address seller;
 
-    uint public initPrice;
     uint public endOfBidding;
     uint public endOfRevealing;
     uint public sendBid;
@@ -19,15 +18,12 @@ contract BarbossaBrethren {
         seller = msg.sender;
     }
 
-    mapping(address => uint) public hashedBidOf;
+    mapping(address => bytes32) public hashedBidOf;
 
-    function encode(uint amount, uint nonce) pure public returns(uint){
-        return uint(keccak256(abi.encodePacked(amount,nonce)));
-    }
-
-    function bid(uint hash) public{
-        // require(now < endOfBidding);
-        hashedBidOf[msg.sender] = hash;
+    function bid(uint amount, uint nonce) public{
+        require(now < endOfBidding);
+        bytes32 h = keccak256(abi.encodePacked(amount,nonce));
+        hashedBidOf[msg.sender] = h;
     }
 
     address public highBidder = msg.sender;
@@ -35,7 +31,7 @@ contract BarbossaBrethren {
 
     function reveal(uint amount, uint nonce) public {
         require(now >= endOfBidding && now < endOfRevealing);
-        require(uint(keccak256(abi.encodePacked(amount, nonce))) == hashedBidOf[msg.sender]);
+        require(keccak256(abi.encodePacked(amount, nonce)) == hashedBidOf[msg.sender]);
 
         if (amount > highBid) {
             highBid = amount;

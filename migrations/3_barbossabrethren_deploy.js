@@ -1,5 +1,5 @@
 const BarbossaBrethren = artifacts.require("BarbossaBrethren");
 
 module.exports = function (deployer) {
-  deployer.deploy(BarbossaBrethren, 20, 10);
+  deployer.deploy(BarbossaBrethren, 300, 60);
 };
