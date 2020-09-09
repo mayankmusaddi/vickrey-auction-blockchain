@@ -1,8 +1,9 @@
 pragma solidity ^0.5.16;
 
 contract BarbossaBrethren {
-    address seller;
+    address public seller;
 
+    uint public biddingPeriod;
     uint public endOfBidding;
     uint public endOfRevealing;
 
@@ -10,22 +11,30 @@ contract BarbossaBrethren {
     uint public highBid;
 
     constructor(
-        uint biddingPeriod,
-        uint revealingPeriod
+        uint _biddingPeriod,
+        uint _revealingPeriod
     )
         public
     {
-        endOfBidding = now + biddingPeriod;
-        endOfRevealing = endOfBidding + revealingPeriod;
+        biddingPeriod = _biddingPeriod;
+        endOfBidding = now + _biddingPeriod;
+        endOfRevealing = endOfBidding + _revealingPeriod;
         seller = msg.sender;
     }
 
     mapping(address => bytes32) public hashedBidOf;
 
-    function bid(uint amount, uint nonce) public{
-        require(now < endOfBidding,"Bidding Time has Ended");
-        bytes32 h = keccak256(abi.encodePacked(amount,nonce));
+    function bid(bytes32 h) public {
+        require(now < endOfBidding);
         hashedBidOf[msg.sender] = h;
+    }
+
+    function timeLeftBidding() view public returns(uint) {
+        return endOfBidding - now;
+    }
+
+    function timeLeftRevealing() view public returns(uint) {
+        return endOfRevealing - now;
     }
 
     function time() view public returns(string memory) {
@@ -37,11 +46,12 @@ contract BarbossaBrethren {
             return "Claim";
     }
 
-    function reveal(uint amount, uint nonce) public {
-        require(now >= endOfBidding,"Revealing time has not begun");
-        require(now < endOfRevealing,"Revealing time has Ended");
+    address public highBidder = msg.sender;
+    uint public highBid;
 
-        require(keccak256(abi.encodePacked(amount, nonce)) == hashedBidOf[msg.sender], "Revealed Bid or Nonce don't match");
+    function reveal(uint amount) public {
+        require(now >= endOfBidding && now < endOfRevealing);
+        require(keccak256(abi.encodePacked(amount)) == hashedBidOf[msg.sender]);
 
         if (amount > highBid) {
             highBid = amount;
