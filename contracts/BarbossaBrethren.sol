@@ -23,7 +23,7 @@ contract BarbossaBrethren {
         uint _biddingPeriod,
         uint _revealingPeriod
     )
-    private
+    public
     {
         endOfBidding = now + _biddingPeriod;
         endOfRevealing = endOfBidding + _revealingPeriod;
@@ -75,8 +75,8 @@ contract BarbossaBrethren {
     }
 
     // Function to send the Barbossa's Brethren claim to the Vickrey Auction
-    function toSend() public returns (address,uint){
+    function toSend() view public returns (address, uint){
         require(now >= endOfRevealing, "Reveal period has not ended");
-        return (highBidder,highBid);
+        return (highBidder, highBid);
     }
 }

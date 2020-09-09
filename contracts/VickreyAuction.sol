@@ -24,11 +24,11 @@ contract VickreyAuction{
     mapping(address => bool) private revealed;
 
     // A constructor taking in the bidding time and revealing time as parameters
-    constructor(
+    constructor (
       uint _biddingPeriod,
       uint _revealingPeriod
     ) 
-    private
+    public
     {
       endOfBidding = now + _biddingPeriod;
       endOfRevealing = endOfBidding + _revealingPeriod;
