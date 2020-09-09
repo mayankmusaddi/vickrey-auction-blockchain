@@ -10,7 +10,7 @@ pragma solidity >=0.4.22 <0.8.0;
 contract BaseAuction{
 
     // State Variables
-    address internal owner;
+    address payable internal owner;
 
     uint internal endOfBidding;
     uint internal endOfRevealing;

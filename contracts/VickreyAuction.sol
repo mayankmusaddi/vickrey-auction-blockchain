@@ -50,4 +50,10 @@ contract VickreyAuction is BaseAuction {
     function getWinner() view public returns (address, uint) {
         return (highBidder, secondBid);
     }
+
+    // A function to be called by the highBidder with the secondBid value to pay to the owner
+    function sendBidValue() public payable {
+        secondBid -= msg.value;
+        owner.transfer(msg.value);
+    }
 }
