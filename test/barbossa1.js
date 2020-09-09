@@ -31,8 +31,10 @@ contract ("BarbossaBrethren", accounts => {
         }
         
         // getting the time left in bidding period
-        var t1 = await barbossaBrethren.timeLeftBidding.call();
-        await timeout((t1.toNumber() + 1)*1000, "bidding");
+        var t1 = await barbossaBrethren.timeLeftBidding();
+        console.log(t1.toNumber());
+        // await timeout((6)*1000, "bidding");
+        await timeout(t1.toNumber()*1000, "bidding");
 
         // revealing the bids
         console.log("Revealing the bids.");
@@ -40,19 +42,23 @@ contract ("BarbossaBrethren", accounts => {
         barbossaBrethren.reveal(bidAmount1, nonce1, {from : bidder1});
         
         // getting the time left in revealing period
-        var t2 = await barbossaBrethren.timeLeftRevealing.call();
+        var t2 = await barbossaBrethren.timeLeftRevealing();
         console.log(t2.toNumber());
-        await timeout((t2.toNumber()+10)*1000, "revealing");
+        // await timeout((10)*1000, "revealing");
+        await timeout(t2.toNumber()*1000, "revealing");
         
-        var t3 = await barbossaBrethren.timeLeftRevealing.call();
-        console.log(t3.toNumber());
+        // var t3 = await barbossaBrethren.timeLeftRevealing();
+        // console.log(t3.toNumber());
         // finding the winner
         let winner = await barbossaBrethren.toSend.call();
         // var winner = await barbossaBrethren.highBidder.call();
         console.log("winner address => ", winner[0]);
         console.log("winning amount => ", winner[1].toNumber());
-        assert("1" === "1");
+
+        barbossaBrethren.toget({from : barbossaAddress});
+        let stat = await barbossaBrethren.ended();
+        console.log(stat);
         // checking if the winner is bidder 2 or not
-        // assert(winner === bidder2);
+        assert(winner[0] === bidder2 && winner[1].toNumber() === bidAmount2);
     });
 });

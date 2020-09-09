@@ -12,7 +12,7 @@ contract VickreyAuction{
 
     // State Variables
     address seller;
-    
+
     uint public endOfBidding;
     uint public endOfRevealing;
     
@@ -43,29 +43,25 @@ contract VickreyAuction{
     // This could be done using web3.utils.keccak256(uint amount, uint nonce)
     // Here nonce is a random value that needs to remembered by the bidder till the reveal time
     // This is done so as to make the hashes of two different bids completely indistinguishable
-    function bid(bytes32 h) public{
-      require(now < endOfBidding,"Bidding Time has Ended");
-      require(msg.sender!=seller,"Seller cannot bid");
+    function bid(bytes32 h) public {
+      require(now < endOfBidding, "Bidding Time has Ended");
+      require(msg.sender!=seller, "Seller cannot bid");
     //   bytes32 h = keccak256(abi.encodePacked(amount,nonce));
       hashedBidOf[msg.sender] = h;
     }
-
+    bool private sendTime = false;
     // Helper functions to indicate the current time and the time left for different periods
-    function timeLeftBidding() view public returns(uint) {
-        return endOfBidding - now;
+    function timeLeftBidding() public returns(uint) {
+      require(now < endOfBidding, "Bidding Time has Ended");
+      sendTime = true;
+      return endOfBidding - now;
     }
 
-    function timeLeftRevealing() view public returns(uint) {
-        return endOfRevealing - now;
-    }
-
-    function time() view public returns(string memory) {
-        if(now < endOfBidding)
-            return "Bidding";
-        else if(now >= endOfBidding && now < endOfRevealing)
-            return "Revealing";
-        else
-            return "Claim";
+    function timeLeftRevealing() public returns(uint) {
+      require(now >= endOfBidding,"Revealing time has not begun");
+      require(now < endOfRevealing,"Revealing time has Ended");
+      sendTime = true;
+      return endOfRevealing - now;
     }
 
     // During the revealing time this function needs to be called to levy the claim

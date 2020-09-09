@@ -1,5 +1,7 @@
 pragma solidity ^0.5.16;
 
+import "./VickreyAuction.sol";
+
 /*
 * A sealed bid auction conducted by the Barbossa's Brethren.
 * Since it is implemented in a smart contract it has some differences
@@ -11,23 +13,31 @@ contract BarbossaBrethren {
 
     // State Variables
     address public seller;
-
-    uint public endOfBidding;
-    uint public endOfRevealing;
+    VickreyAuction vk;
+    uint private endOfBidding;
+    uint private endOfRevealing;
 
     address private highBidder;
     uint private highBid;
+    uint private myNonce;
+    bool public sent;
+    bool public revealed;
+    bool sendTime;
 
     // A constructor taking in the bidding time and revealing time as parameters
-    constructor(
-        uint _biddingPeriod,
-        uint _revealingPeriod
-    )
-    public
-    {
-        endOfBidding = now + _biddingPeriod;
-        endOfRevealing = endOfBidding + _revealingPeriod;
+    constructor() public {
         seller = msg.sender;
+        myNonce = 10;
+        highBid = 0;
+    }
+
+    // function to set address of main auction
+    function setAddress(address _t) public {
+        require(msg.sender == seller);
+        vk = VickreyAuction(_t);
+        uint tm = vk.timeLeftBidding();
+        endOfBidding = now + tm - 4;
+        endOfRevealing = endOfBidding + 2;
     }
 
     // The bids are stored in a hashed format so that it is not visible even to the seller
@@ -43,21 +53,17 @@ contract BarbossaBrethren {
     }
 
     // Helper functions to indicate the current time and the time left for different periods
-    function timeLeftBidding() view public returns(uint) {
+    function timeLeftBidding() public returns(uint) {
+        require(now < endOfBidding, "Bidding Time has Ended");
+        sendTime = true;
         return endOfBidding - now;
     }
 
-    function timeLeftRevealing() view public returns(uint) {
+    function timeLeftRevealing() public returns(uint) {
+        require(now >= endOfBidding,"Revealing time has not begun");
+        require(now < endOfRevealing,"Revealing time has Ended");
+        sendTime = true;
         return endOfRevealing - now;
-    }
-
-    function time() view public returns(string memory) {
-        if(now < endOfBidding)
-            return "Bidding";
-        else if(now >= endOfBidding && now < endOfRevealing)
-            return "Revealing";
-        else
-            return "Claim";
     }
 
     // During the revealing time this function needs to be called to levy the claim
@@ -74,9 +80,20 @@ contract BarbossaBrethren {
         }
     }
 
-    // Function to send the Barbossa's Brethren claim to the Vickrey Auction
-    function toSend() view public returns (address, uint){
+    // Function to send bid from bidding ring to the Vickrey Auction
+    function sendToVickery() public {
         require(now >= endOfRevealing, "Reveal period has not ended");
-        return (highBidder, highBid);
+        require(msg.sender == seller);
+        vk.bid(keccak256(abi.encodePacked(highBid, myNonce)));
+        sent = true;
     }
+    // Function to reveal bid to vickery
+    function revealToVickery() public {
+        require(now >= endOfRevealing, "Reveal period has not ended");
+        require(msg.sender == seller && sent == true);
+        // require(sent == true);
+        vk.reveal(highBid, myNonce);
+        revealed = true;
+    }
+
 }
