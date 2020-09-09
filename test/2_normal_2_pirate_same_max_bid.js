@@ -1,16 +1,15 @@
 const BiddingRing = artifacts.require("BiddingRing");
 const VickreyAuction = artifacts.require("VickreyAuction");
 const { soliditySha3 } = require("web3-utils");
-const { assert } = require("console");
 
-contract ("Linking barbossa and vickery", accounts => {
-    it('should link the two', async () => {
+contract ("Vickrey Auction with 2 same highest bids\n", accounts => {
+    it('Winner can be either the bidding ring or the bidder2 and winning amount 3', async () => {
         // deploying biddingRing contract using address as accounts[0]
         var sellerAddress = accounts[9];
         var barbossaAddress = accounts[0];
         const vickreyAuction = await VickreyAuction.deployed({from:sellerAddress});
         const biddingRing = await BiddingRing.deployed({from : barbossaAddress});
-        console.log("Vickrey Auction Address => ", vickreyAuction.address, "\n");
+        console.log("Vickrey Auction Address => ", vickreyAuction.address);
         console.log("Bidding Ring Address => ", biddingRing.address, "\n");
         
         // barbossa calling the set address function
@@ -24,8 +23,7 @@ contract ("Linking barbossa and vickery", accounts => {
         const phashAmount1 = soliditySha3(pbidAmount1, pnonce1);
         const phashAmount2 = soliditySha3(pbidAmount2, pnonce2);
         console.log("pirate 1 address => ", pbidder1);
-        console.log("pirate 2 address => ", pbidder2);
-        console.log();
+        console.log("pirate 2 address => ", pbidder2, "\n");
 
         // declaring the bidder address and amounts
         var bidder1 = accounts[8];
@@ -35,8 +33,7 @@ contract ("Linking barbossa and vickery", accounts => {
         const hashAmount1 = soliditySha3(bidAmount1, nonce1);
         const hashAmount2 = soliditySha3(bidAmount2, nonce2);
         console.log("bidder 1 address => ", bidder1);
-        console.log("bidder 2 address => ", bidder2);
-        console.log();
+        console.log("bidder 2 address => ", bidder2, "\n");
         
         // sending the hashed amount to bid function for pirates
         console.log("Pirates submitting the bids to bidding ring ...");
@@ -56,9 +53,7 @@ contract ("Linking barbossa and vickery", accounts => {
         
         // getting the time left in bidding period
         var t1 = await biddingRing.timeLeftBidding.call();
-        // console.log(t1.toNumber());
         await timeout(t1.toNumber()*1000, "bidding", "bidding ring");
-        // var status = biddingRing.bid(phashAmount1, {from : pbidder1});
 
         // revealing the bids for pirates
         console.log("Revealing the bids.");
@@ -67,15 +62,13 @@ contract ("Linking barbossa and vickery", accounts => {
         
         // getting the time left in revealing period
         var t2 = await biddingRing.timeLeftRevealing.call();
-        // console.log(t2.toNumber());
         await timeout(t2.toNumber()*1000, "revealing", "bidding ring");
         
         biddingRing.sendToVickrey({from : barbossaAddress});
         
         // getting the time left in bidding period
         var t1 = await vickreyAuction.timeLeftBidding.call();
-        // console.log(t1.toNumber());
-        await timeout(t1.toNumber()*1000, "bidding", "Vickery Auction");
+        await timeout((t1.toNumber()+1)*1000, "bidding", "Vickery Auction");
 
         // Revealing bids for Vickery Auction
         console.log("Revealing bids for Vickery Auction");
@@ -85,14 +78,13 @@ contract ("Linking barbossa and vickery", accounts => {
 
         // getting the time left in revealing period
         var t2 = await vickreyAuction.timeLeftRevealing.call();
-        // console.log(t2.toNumber());
-        await timeout(t2.toNumber()*1000, "revealing", "Vickery Auction");
+        await timeout((t2.toNumber()+1)*1000, "revealing", "Vickery Auction");
 
         var winner = await vickreyAuction.getWinner.call();
         console.log("Winner Address => ", winner[0]);
         console.log("Winning Amount => ", winner[1].toNumber());
 
-        assert(winner[0] === biddingRing.address || winner[0] === bidder2);
+        assert((winner[0] === biddingRing.address || winner[0] === bidder2) && winner[1].toNumber() == bidAmount2);
 
     });
 });

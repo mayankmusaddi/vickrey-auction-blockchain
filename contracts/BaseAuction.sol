@@ -1,7 +1,10 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.4.22 <0.8.0;
 
 /*
-* A Base Auction contract
+* A Base Auction contract from which both the Vickrey Auction and Bidding Ring contracts
+* would be inherited. We have made a separate contract because most of the part of the code
+* was same including most of the bid and reveal functions and the modifiers.
 */
 
 contract BaseAuction{
@@ -24,12 +27,12 @@ contract BaseAuction{
         _;
     }
     modifier withinBidTime {
-      require(now < endOfBidding, "Bidding Time has Ended");
+      require(block.timestamp < endOfBidding, "Bidding Time has Ended");
       _;
     }
     modifier withinRevealTime {
-      require(now >= endOfBidding,"Revealing time has not begun");
-      require(now < endOfRevealing,"Revealing time has Ended");
+      require(block.timestamp >= endOfBidding,"Revealing time has not begun");
+      require(block.timestamp < endOfRevealing,"Revealing time has Ended");
       _;
     }
 
@@ -47,12 +50,12 @@ contract BaseAuction{
     // Helper functions to indicate the current time and the time left for different periods
     function timeLeftBidding() public withinBidTime returns(uint) {
       sendTime = true;
-      return endOfBidding - now;
+      return endOfBidding - block.timestamp;
     }
 
     function timeLeftRevealing() public withinRevealTime returns(uint) {
       sendTime = true;
-      return endOfRevealing - now;
+      return endOfRevealing - block.timestamp;
     }
 
     // During the revealing time this function needs to be called to levy the claim
