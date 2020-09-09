@@ -1,20 +1,20 @@
-const BarbossaBrethren = artifacts.require("BarbossaBrethren");
+const BiddingRing = artifacts.require("BiddingRing");
 const VickreyAuction = artifacts.require("VickreyAuction");
 const { soliditySha3 } = require("web3-utils");
 const { assert } = require("console");
 
 contract ("Linking barbossa and vickery", accounts => {
     it('should link the two', async () => {
-        // deploying barbossaBrethren contract using address as accounts[0]
+        // deploying biddingRing contract using address as accounts[0]
         var sellerAddress = accounts[9];
         var barbossaAddress = accounts[0];
         const vickreyAuction = await VickreyAuction.deployed({from:sellerAddress});
-        const barbossaBrethren = await BarbossaBrethren.deployed({from : barbossaAddress});
+        const biddingRing = await BiddingRing.deployed({from : barbossaAddress});
         console.log("Vickrey Auction Address => ", vickreyAuction.address, "\n");
-        console.log("Bidding Ring Address => ", barbossaBrethren.address, "\n");
+        console.log("Bidding Ring Address => ", biddingRing.address, "\n");
         
         // barbossa calling the set address function
-        var status = await barbossaBrethren.setAddress(vickreyAuction.address, {from : barbossaAddress});
+        var status = await biddingRing.setAddress(vickreyAuction.address, {from : barbossaAddress});
 
         // declaring the pirate bidders and amounts
         var pbidder1 = accounts[1];
@@ -31,7 +31,7 @@ contract ("Linking barbossa and vickery", accounts => {
         var bidder1 = accounts[8];
         var bidAmount1 = 1; var nonce1 = 2;
         var bidder2 = accounts[7];
-        var bidAmount2 = 4; var nonce2 = 30;
+        var bidAmount2 = 3; var nonce2 = 30;
         const hashAmount1 = soliditySha3(bidAmount1, nonce1);
         const hashAmount2 = soliditySha3(bidAmount2, nonce2);
         console.log("bidder 1 address => ", bidder1);
@@ -40,8 +40,8 @@ contract ("Linking barbossa and vickery", accounts => {
         
         // sending the hashed amount to bid function for pirates
         console.log("Pirates submitting the bids to bidding ring ...");
-        barbossaBrethren.bid(phashAmount1, {from : pbidder1});
-        barbossaBrethren.bid(phashAmount2, {from : pbidder2});
+        biddingRing.bid(phashAmount1, {from : pbidder1});
+        biddingRing.bid(phashAmount2, {from : pbidder2});
 
         // sending the hashed amount to bid function for vickrey auction
         console.log("Bidders submitting the bids to Vickery Auction ...");
@@ -55,35 +55,22 @@ contract ("Linking barbossa and vickery", accounts => {
         }
         
         // getting the time left in bidding period
-        var t1 = await barbossaBrethren.timeLeftBidding.call();
+        var t1 = await biddingRing.timeLeftBidding.call();
         // console.log(t1.toNumber());
         await timeout(t1.toNumber()*1000, "bidding", "bidding ring");
+        // var status = biddingRing.bid(phashAmount1, {from : pbidder1});
 
         // revealing the bids for pirates
         console.log("Revealing the bids.");
-        barbossaBrethren.reveal(pbidAmount2, pnonce2, {from : pbidder2});
-        barbossaBrethren.reveal(pbidAmount1, pnonce1, {from : pbidder1});
+        biddingRing.reveal(pbidAmount2, pnonce2, {from : pbidder2});
+        biddingRing.reveal(pbidAmount1, pnonce1, {from : pbidder1});
         
         // getting the time left in revealing period
-        var t2 = await barbossaBrethren.timeLeftRevealing.call();
+        var t2 = await biddingRing.timeLeftRevealing.call();
         // console.log(t2.toNumber());
         await timeout(t2.toNumber()*1000, "revealing", "bidding ring");
         
-        // var t3 = await barbossaBrethren.timeLeftRevealing();
-        // console.log(t3.toNumber());
-        // finding the winner
-        // let winner = await barbossaBrethren.toSend.call();
-        // var winner = await barbossaBrethren.highBidder.call();
-        // console.log("winner address => ", winner[0]);
-        // console.log("winning amount => ", winner[1].toNumber());
-
-        barbossaBrethren.sendToVickery({from : barbossaAddress});
-        // let stat = await barbossaBrethren.ended();
-        // console.log(stat);
-        // checking if the winner is bidder 2 or not
-        // assert(winner[0] === bidder2 && winner[1].toNumber() === bidAmount2);
-
-
+        biddingRing.sendToVickrey({from : barbossaAddress});
         
         // getting the time left in bidding period
         var t1 = await vickreyAuction.timeLeftBidding.call();
@@ -94,7 +81,7 @@ contract ("Linking barbossa and vickery", accounts => {
         console.log("Revealing bids for Vickery Auction");
         vickreyAuction.reveal(bidAmount2, nonce2, {from : bidder2});
         vickreyAuction.reveal(bidAmount1, nonce1, {from : bidder1});
-        barbossaBrethren.revealToVickery({from:barbossaAddress});
+        biddingRing.revealToVickrey({from:barbossaAddress});
 
         // getting the time left in revealing period
         var t2 = await vickreyAuction.timeLeftRevealing.call();
@@ -105,8 +92,7 @@ contract ("Linking barbossa and vickery", accounts => {
         console.log("Winner Address => ", winner[0]);
         console.log("Winning Amount => ", winner[1].toNumber());
 
-        assert(winner[0] === bidder2);
-        // assert(winner[0] === barbossaBrethren.address);
+        assert(winner[0] === biddingRing.address || winner[0] === bidder2);
 
     });
 });
