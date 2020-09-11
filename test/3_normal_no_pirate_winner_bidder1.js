@@ -53,6 +53,11 @@ contract ("Vickrey Auction with no pirates\n", accounts => {
         console.log("Winner Address => ", winner[0]);
         console.log("Winning Amount => ", winner[1].toNumber());
 
+        // paying the money to owner
+        var sender = winner[0];
+        let recvMoney = await vickreyAuction.sendBidValue.call({from : sender, value : winner[1].toNumber()});
+        console.log(sender, " sent ", recvMoney.toNumber(), " money to the owner.");
+
         assert(winner[0] === bidder3 && winner[1].toNumber() === bidAmount2);
 
     });

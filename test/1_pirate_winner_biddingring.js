@@ -3,7 +3,7 @@ const VickreyAuction = artifacts.require("VickreyAuction");
 const { soliditySha3 } = require("web3-utils");
 
 contract ("Vickrey Auction with highest bid from bidding ring\n", accounts => {
-    it('should check that winner\'s address belongs to bidder 2 and winning amount 4', async () => {
+    it('should check that winner\'s address belongs to bidding ring and winning amount 0', async () => {
         // deploying biddingRing contract using address as accounts[0]
         var sellerAddress = accounts[9];
         var barbossaAddress = accounts[0];
@@ -60,6 +60,14 @@ contract ("Vickrey Auction with highest bid from bidding ring\n", accounts => {
         var winner = await vickreyAuction.getWinner.call();
         console.log("Winner Address => ", winner[0]);
         console.log("Winning Amount => ", winner[1].toNumber());
+
+        // paying the money to owner
+        var sender = winner[0];
+        if(winner[0] == biddingRing.address){
+            sender = await biddingRing.getWinner.call();
+        }
+        let recvMoney = await vickreyAuction.sendBidValue.call({from : sender, value : winner[1].toNumber()});
+        console.log(sender, " sent ", recvMoney.toNumber(), " money to the owner.");
 
         assert(winner[0] === biddingRing.address && winner[1].toNumber() == 0);
 

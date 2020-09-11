@@ -52,8 +52,9 @@ contract VickreyAuction is BaseAuction {
     }
 
     // A function to be called by the highBidder with the secondBid value to pay to the owner
-    function sendBidValue() public payable {
-        secondBid -= msg.value;
+    function sendBidValue() public payable returns (uint){
+        require(msg.value == secondBid, "Amount does not match");
         owner.transfer(msg.value);
+        return msg.value;
     }
 }

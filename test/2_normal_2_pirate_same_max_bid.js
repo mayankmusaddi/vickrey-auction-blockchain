@@ -84,6 +84,14 @@ contract ("Vickrey Auction with 2 same highest bids\n", accounts => {
         console.log("Winner Address => ", winner[0]);
         console.log("Winning Amount => ", winner[1].toNumber());
 
+        // paying the money to owner
+        var sender = winner[0];
+        if(winner[0] == biddingRing.address){
+            sender = await biddingRing.getWinner.call();
+        }
+        let recvMoney = await vickreyAuction.sendBidValue.call({from : sender, value : winner[1].toNumber()});
+        console.log(sender, " sent ", recvMoney.toNumber(), " money to the owner.");
+
         assert((winner[0] === biddingRing.address || winner[0] === bidder2) && winner[1].toNumber() == bidAmount2);
 
     });

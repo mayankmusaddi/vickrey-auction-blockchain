@@ -15,8 +15,8 @@ contract BaseAuction{
     uint internal endOfBidding;
     uint internal endOfRevealing;
 
-    address internal highBidder;
-    uint internal highBid;
+    address public highBidder;
+    uint public highBid;
     bool internal sendTime;
 
     // A revealed mapping which disallows seller to bid

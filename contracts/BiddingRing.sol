@@ -54,4 +54,7 @@ contract BiddingRing is BaseAuction{
         vk.reveal(highBid, myNonce);
         bidReveal = true;
     }
+    function getWinner() view public returns (address) {
+        return (highBidder);
+    }
 }
